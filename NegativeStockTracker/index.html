@@ -1,55 +1,28 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Top Negative Stocks</title>
+<title>Stock Dashboard</title>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="container">
 
-    <h1>Top Negative Stocks</h1>
-    <div class="buttons">
-      <button id="toggleStrategyBtn" onclick="toggleStrategy()">Enable Strategy</button>
-    </div>
-    <div class="scrollable-table" id="stocks-table">
+    <div class="container">
+        <h1>Stock Dashboard</h1>
+        <div id="profitDisplay">Realised Profit till Date: <span id="realisedProfit">$0.00</span></div>
+        <div id="tableContainer"></div>
+      </div>
+      <div class="container">
+        <h1>Dashboard 2</h1>
+        <div id="updateTime"></div>
+        <button id="updateButton">Update</button>
+        <div id="stockTable"></div>
+      </div>
+      
 
-      <form id="postDataForm">
-        <label for="isRemoved">Is Removed:</label>
-        <input type="checkbox" id="isRemoved" name="isRemoved" value="false">
-        <br>
-        <label for="stockId">Stock ID:</label>
-        <input type="number" id="stockId" name="stockId">
-        <br>
-        <label for="budget">Budget:</label>
-        <input type="number" id="budget" name="budget">
-        <br>
-        <button type="submit">Submit</button>
-    </form>
-    <div id="tableContainer">
-  <table id="stockTable">
-      <thead>
-          <tr>
-              <th>Stock Name</th>
-              <th>To Buy</th>
-              <th>Budget</th>
-              <th>Is Removed</th>
-              <th>Net Lifetime Earnings</th>
-              <th>Last Updated</th>
-          </tr>
-      </thead>
-      <tbody id="tableBody">
-      </tbody>
-  </table>
-</div>
-</div>
-  <div class="buy-sell-log">
-    <h2>Buy/Sell Log</h2>
-    <textarea id="buySellLog" rows="5" cols="50" readonly></textarea>
-  </div>
-</div>
-
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="script.js"></script>
+<script src="dashboard2Component.js"></script>
 </body>
 </html>
