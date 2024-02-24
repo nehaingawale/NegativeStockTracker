@@ -1,128 +1,113 @@
-document.addEventListener('DOMContentLoaded', function() {
-    let strategyEnabled = false;
-    const buySellLogTextarea = document.getElementById('buySellLog');  
-    
+// script.js
+
+
+// Map to store stock name to ID mapping
+const stockIdMap = {};
+
+$(document).ready(function() {
+    // Fetch data from API
+    $.get("http://stockalgoapp-env.eba-4sqye4mb.ap-south-1.elasticbeanstalk.com/getDwh", function(data) {
+      displayData(data);
+    });
   });
   
+  function displayData(data) {
+    const tableContainer = $("#tableContainer");
+    const table = $("<table>");
+    const thead = $("<thead>").appendTo(table);
+    const tbody = $("<tbody>").appendTo(table);
+    
+    // Create table header
+    const headerRow = $("<tr>").appendTo(thead);
+    $("<th>").text("Stock Name").appendTo(headerRow);
+    $("<th>").text("To Buy").appendTo(headerRow);
+    $("<th>").text("Budget").appendTo(headerRow);
+    $("<th>").text("Is Removed").appendTo(headerRow);
+    $("<th>").text("Net Lifetime Earnings").appendTo(headerRow);
+    $("<th>").text("Updated At").appendTo(headerRow);
+    $("<th>").text("Update").appendTo(headerRow);
+    
+    // Populate stockIdMap and table rows with data
+    data.forEach(item => {
+    // Populate stockIdMap
+    stockIdMap[item.stockName] = item.stockId;
 
-    // Function to fetch data from API and populate the table
-    async function fetchData() {
-        const response = await fetch('http://stockalgoapp-env.eba-4sqye4mb.ap-south-1.elasticbeanstalk.com/getDwh');
-        const data = await response.json();
-        // const tableBody = document.querySelector('#stockTable tbody');
+    const row = $("<tr>").appendTo(tbody);
+    $("<td>").text(item.stockName).appendTo(row);
+    $("<td>").text(item.toBuy ? "Yes" : "No").appendTo(row);
+    const budgetCell = $("<td>").addClass("editable").text(item.budget).appendTo(row);
+    const isRemovedCell = $("<td>").addClass("editable").text(item.isRemoved ? "Yes" : "No").appendTo(row);
+    $("<td>").text(item.netLifetimeEarnings).appendTo(row);
+    $("<td>").text(item.updatedAt).appendTo(row);
 
+   
 
-          // Sort data based on 'Net Lifetime Earnings' in descending order
-          data.sort((a, b) => b.netLifetimeEarnings - a.netLifetimeEarnings);
+    // Add update button
+    const updateButton = $("<button>").addClass("updateButton").text("Update").appendTo($("<td>").appendTo(row));
+    updateButton.click(function() {
+      updateRow(item.stockName, row);
+    });
 
-          // Display only the top 20 most negative stocks
-          const tableBody = document.querySelector('#tableBody');
-          data.slice(0, 20).forEach(item => {
-              const row = document.createElement('tr');
-              row.innerHTML = `
-                  <td>${item.stockName}</td>
-                  <td>${item.toBuy}</td>
-                  <td>${item.budget}</td>
-                  <td>${item.isRemoved}</td>
-                  <td>${item.netLifetimeEarnings}</td>
-                  <td>${item.updatedAt}</td>
-              `;
-              tableBody.appendChild(row);
-          });
-  }
-
-    // Function to toggle strategy (enable/disable)
-    async function toggleStrategy() {
-      strategyEnabled = !strategyEnabled;
-      const action = strategyEnabled ? 'enable' : 'disable';
-      document.getElementById('toggleStrategyBtn').textContent = strategyEnabled ? 'Disable Strategy' : 'Enable Strategy';
-
-      // Send request to server to toggle strategy
-      const response = await fetch(`http://stockalgoapp-env.eba-4sqye4mb.ap-south-1.elasticbeanstalk.com/${action}Strategy`, {
-          method: 'PUT',
-          headers: {
-              'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-              strategy: strategyEnabled
-          })
-      });
-      const result = await response.json();
-      console.log(result); // Handle response accordingly
-  }
-        // data.forEach(item => {
-        //     const row = document.createElement('tr');
-        //     row.innerHTML = `
-        //         <td>${item.stockName}</td>
-        //         <td>${item.toBuy}</td>
-        //         <td class="editable-cell" data-id="${item.id}" data-column="budget">${item.budget}</td>
-        //         <td class="editable-cell" data-id="${item.id}" data-column="isRemoved">${item.isRemoved}</td>
-        //         <td>${item.netLifetimeEarnings}</td>
-        //         <td>${item.updatedAt}</td>
-        //     `;
-        //     tableBody.appendChild(row);
-        // });
-
-        // Add event listeners for editing
-        const editableCells = document.querySelectorAll('.editable-cell');
-        editableCells.forEach(cell => {
-            cell.addEventListener('click', () => {
-                const input = document.createElement('input');
-                input.value = cell.textContent.trim();
-                cell.classList.add('active');
-                cell.innerHTML = '';
-                cell.appendChild(input);
-                input.focus();
-
-                input.addEventListener('blur', () => {
-                    const newValue = input.value.trim();
-                    cell.classList.remove('active');
-                    cell.innerHTML = newValue;
-                    const id = cell.dataset.id;
-                    const column = cell.dataset.column;
-                    // Send the updated value to the server for persistence
-                    sendData(id, column, newValue);
-                });
-            });
-        });
-    // }
-
-    // Function to send updated data to the server
-    async function sendData(id, column, value) {
-        const response = await fetch(`http://stockalgoapp-env.eba-4sqye4mb.ap-south-1.elasticbeanstalk.com/updateData/${id}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                [column]: value
-            })
-        });
-        const result = await response.json();
-        console.log(result); // You can handle the response accordingly
+    // Style row based on requirements
+    if (item.isRemoved) {
+      row.addClass("removed");
+    } else if (item.toBuy) {
+      row.addClass("toBeRemoved");
     }
 
-    
-   // Function to handle form submission and POST request
-   document.getElementById('postDataForm').addEventListener('submit', async function(event) {
-    event.preventDefault();
-    
-    const formData = new FormData(this);
-    const postData = {};
-    formData.forEach((value, key) => {
-        postData[key] = value;
-    });
+  });
 
-    const response = await fetch('http://stockalgoapp-env.eba-4sqye4mb.ap-south-1.elasticbeanstalk.com/Dwh', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(postData)
-    });
-    const result = await response.json();
-    console.log(result); // Handle response accordingly
-});
 
-  // Call fetchData function to populate the table
-  fetchData();
+      // Append table to container
+      tableContainer.append(table);
+}
+
+  
+function updateRow(stockName, row) {
+    // Extract stockId from stockIdMap
+    const stockId = stockIdMap[stockName];
+    
+    // Extract updated values from row
+    const toBuy = row.find("td:nth-child(2)").text().toLowerCase() === "yes";
+    const budget = parseInt(row.find("td:nth-child(3)").text());
+    const isRemoved = row.find("td:nth-child(4)").text().toLowerCase() === "yes";
+    
+     // Make API call to update data
+  $.ajax({
+    url: "http://stockalgoapp-env.eba-4sqye4mb.ap-south-1.elasticbeanstalk.com/Dwh",
+    type: "POST",
+    contentType: "application/json",
+    data: JSON.stringify({ stockId, budget, isRemoved }),
+    success: function(response) {
+      console.log("Data updated successfully:", response);
+      row.removeClass("edited");
+      row.addClass("success");
+    },
+    error: function(xhr, status, error) {
+      console.error("Error updating data:", error);
+    }
+     });
+}
+
+function enableStrategy() {
+    // Enable strategy logic
+    console.log("Strategy enabled.");
+  }
+  
+  function disableStrategy() {
+    // Disable strategy logic
+    console.log("Strategy disabled.");
+  }
+  
+
+   $(document).ready(function() {
+    fetchAndDisplayStockData();
+
+     // Bind strategy buttons
+  $("#enableStrategyBtn").click(enableStrategy);
+  $("#disableStrategyBtn").click(disableStrategy);
+  });    
+    
+
+
+  
