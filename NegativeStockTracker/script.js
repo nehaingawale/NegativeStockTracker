@@ -68,6 +68,8 @@ function editRow(row, budgetCell, isRemovedCell) {
   // Make budget and isRemoved cells editable
   budgetCell.attr("contenteditable", true).focus();
   isRemovedCell.attr("contenteditable", true);
+  budgetCell.addClass("editableActive");
+  isRemovedCell.addClass("editableActive");
 
   // Trigger API call on pressing Enter key
   $(document).on("keypress", function(e) {
@@ -89,6 +91,8 @@ function editRow(row, budgetCell, isRemovedCell) {
           row.addClass("success");
           budgetCell.attr("contenteditable", false);
           isRemovedCell.attr("contenteditable", false);
+          budgetCell.removeClass("editableActive");
+          isRemovedCell.removeClass("editableActive");
           $(document).off("keypress");
         },
         error: function(xhr, status, error) {
@@ -98,6 +102,7 @@ function editRow(row, budgetCell, isRemovedCell) {
     }
   });
 }
+
 function updateRow(stockName, row) {
   // Extract stockId from stockIdMap
   const stockId = stockIdMap[stockName];
@@ -126,4 +131,11 @@ function updateRow(stockName, row) {
 
 $(document).ready(function() {
   fetchAndDisplayStockData();
+
+   // Enable cell editing on click
+   $(document).on("click", ".editable", function() {
+    $(this).attr("contenteditable", true).focus();
+    $(this).addClass("editableActive");
+  });
+
 });
