@@ -107,7 +107,7 @@ function updateRow(stockName, row) {
   // Extract stockId from stockIdMap
   const stockId = stockIdMap[stockName];
 
-  // Extract updated values from row
+  // Extract updated values from the row
   const toBuy = row.find("td:nth-child(2)").text().toLowerCase() === "yes";
   const budget = parseInt(row.find("td:nth-child(3)").text());
   const isRemoved = row.find("td:nth-child(4)").text().toLowerCase() === "yes";
@@ -136,6 +136,13 @@ $(document).ready(function() {
    $(document).on("click", ".editable", function() {
     $(this).attr("contenteditable", true).focus();
     $(this).addClass("editableActive");
+  });
+
+  // Bind click event to update button
+  $(document).on("click", ".updateButton", function() {
+    const row = $(this).closest("tr");
+    const stockName = row.find("td:nth-child(1)").text();
+    updateRow(stockName, row);
   });
 
 });
